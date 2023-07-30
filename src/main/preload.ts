@@ -2,8 +2,24 @@
 /* eslint no-unused-vars: off */
 import { contextBridge, ipcRenderer, IpcRendererEvent } from 'electron';
 
-export type Channels = 'ipc-example' | 'login' | 'logged' | 'main-view-url';
-export type StoreKeys = 'username' | 'main-view-url' | 'token';
+export type Channels =
+  | 'ipc-example'
+  | 'login'
+  | 'logged'
+  | 'main-view-url'
+  | 'maximize'
+  | 'close'
+  | 'minimize'
+  | 'refresh'
+  | 'forward'
+  | 'backward'
+  | 'side-menu-navigation';
+export type StoreKeys =
+  | 'username'
+  | 'main-view-url'
+  | 'token'
+  | 'game'
+  | 'all-games';
 
 const electronHandler = {
   ipcRenderer: {

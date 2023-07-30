@@ -3,8 +3,6 @@ import { Route, HashRouter as Router, Routes } from 'react-router-dom';
 import BottomMenu from './BottomMenu/BottomMenu';
 import Login from './Login/Login';
 import Main from './Main/Main';
-import SideMenu from './SideMenu/SideMenu';
-import TopMenu from './TopMenu/TopMenu';
 
 export default function App() {
   return (
@@ -13,16 +11,6 @@ export default function App() {
         <Routes>
           <Route path="/" element={<Login />} />
           <Route path="/main" element={<Main />} />
-        </Routes>
-      </Router>
-      <Router basename="/top-menu">
-        <Routes>
-          <Route path="/" element={<TopMenu />} />
-        </Routes>
-      </Router>
-      <Router basename="/side-menu">
-        <Routes>
-          <Route path="/" element={<SideMenu />} />
         </Routes>
       </Router>
       <Router basename="/bottom-menu">

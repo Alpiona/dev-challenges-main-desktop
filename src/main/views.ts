@@ -4,8 +4,9 @@ import { resolveHtmlPath } from './util';
 
 export default class ViewsManager {
   private mainWindow: BrowserWindow;
+  public hideMainView = false;
   public mainView: BrowserView;
-  public bottomMenuView: BrowserView;
+  public bottomMenuView: BrowserView | undefined;
 
   SIDE_MENU_WIDTH = 350;
   TOP_MENU_HEIGHT = 100;
@@ -14,62 +15,16 @@ export default class ViewsManager {
   constructor(mainWindow: BrowserWindow) {
     this.mainWindow = mainWindow;
     this.mainView = new BrowserView();
-    this.bottomMenuView = new BrowserView({
-      webPreferences: {
-        preload: app.isPackaged
-          ? path.join(__dirname, 'preload.js')
-          : path.join(__dirname, '../../.erb/dll/preload.js'),
-      },
-    });
     this.initializeViews();
 
     mainWindow.on('resize', () => {
-      const [width, height] = this.mainWindow.getSize();
-      this.updateViewsSize(width, height);
-    });
-
-    mainWindow.on('resized', () => {
-      const [width, height] = this.mainWindow.getSize();
-      this.updateViewsSize(width, height);
-    });
-
-    mainWindow.on('will-resize', () => {
-      const [width, height] = this.mainWindow.getSize();
-      this.updateViewsSize(width, height);
-    });
-
-    mainWindow.on('maximize', () => {
-      const [width, height] = this.mainWindow.getSize();
-      this.updateViewsSize(width, height);
-    });
-
-    mainWindow.on('moved', () => {
-      const [width, height] = this.mainWindow.getSize();
-      this.updateViewsSize(width, height);
-    });
-
-    mainWindow.on('will-move', () => {
-      const [width, height] = this.mainWindow.getSize();
-      this.updateViewsSize(width, height);
-    });
-
-    mainWindow.on('enter-full-screen', () => {
-      const [width, height] = this.mainWindow.getSize();
-      this.updateViewsSize(width, height);
-    });
-
-    mainWindow.on('leave-full-screen', () => {
-      const [width, height] = this.mainWindow.getSize();
-      this.updateViewsSize(width, height);
+      this.updateViewsSize();
     });
   }
 
   private initializeViews() {
-    const [width, height] = this.mainWindow.getSize();
-
-    this.updateViewsSize(width, height);
-    // this.initializeMainView();
-    this.initializeBottomMenuView();
+    this.updateViewsSize();
+    this.initializeMainView();
   }
 
   private initializeMainView() {
@@ -77,26 +32,44 @@ export default class ViewsManager {
     this.mainView.webContents.loadURL('http://localhost:3000');
   }
 
-  private initializeBottomMenuView() {
+  public initializeBottomMenuView() {
+    this.bottomMenuView = new BrowserView({
+      webPreferences: {
+        preload: app.isPackaged
+          ? path.join(__dirname, 'preload.js')
+          : path.join(__dirname, '../../.erb/dll/preload.js'),
+      },
+    });
     this.mainWindow.addBrowserView(this.bottomMenuView);
+    this.updateViewsSize();
     this.bottomMenuView.webContents.loadURL(
       resolveHtmlPath('index.html', '/bottom-menu')
     );
   }
 
-  private updateViewsSize(width: number, height: number) {
+  public finalizeBottomMenuView() {
+    if (this.bottomMenuView) {
+      this.bottomMenuView.webContents.close();
+    }
+  }
+
+  public updateViewsSize() {
+    const [width, height] = this.mainWindow.getSize();
+
     this.mainView.setBounds({
       x: this.SIDE_MENU_WIDTH,
       y: this.TOP_MENU_HEIGHT,
-      width: width - this.SIDE_MENU_WIDTH,
+      width: this.hideMainView ? 0 : width - this.SIDE_MENU_WIDTH,
       height: height - this.TOP_MENU_HEIGHT,
     });
 
-    this.bottomMenuView.setBounds({
-      x: this.SIDE_MENU_WIDTH,
-      y: height - this.BOTTOM_MENU_HEIGHT,
-      width: width - this.SIDE_MENU_WIDTH,
-      height: this.BOTTOM_MENU_HEIGHT,
-    });
+    if (this.bottomMenuView) {
+      this.bottomMenuView.setBounds({
+        x: this.SIDE_MENU_WIDTH,
+        y: height - this.BOTTOM_MENU_HEIGHT,
+        width: this.hideMainView ? 0 : width - this.SIDE_MENU_WIDTH,
+        height: this.BOTTOM_MENU_HEIGHT,
+      });
+    }
   }
 }

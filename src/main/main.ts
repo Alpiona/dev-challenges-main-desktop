@@ -13,6 +13,7 @@ import log from 'electron-log';
 import Store from 'electron-store';
 import { autoUpdater } from 'electron-updater';
 import path from 'path';
+import { getGamesList, getOneGame } from '../actions/gameActions';
 import { handleLogin } from '../actions/userActions';
 import { resolveHtmlPath } from './util';
 import ViewsManager from './views';
@@ -49,7 +50,6 @@ ipcMain.on('ipc-example', async (event, arg) => {
 });
 
 ipcMain.on('get-url', async (event) => {
-  console.log('bateu');
   let url = '';
   const mainViewIsShowing = views.mainView.webContents.isOffscreen();
 
@@ -57,7 +57,6 @@ ipcMain.on('get-url', async (event) => {
     ? views.mainView.webContents.getURL()
     : mainWindow!.webContents.getURL();
 
-  console.log(url);
   event.reply('get-url', url);
 });
 
@@ -187,6 +186,10 @@ const login = async (username: string, password: string) => {
     .set(cookie)
     .then(() => console.log('session return'))
     .catch((err) => console.log(err));
+
+  getGamesList({}, token as string)
+    .then((data) => store.set('all-games', data))
+    .catch((err) => console.log('getGamesList', console.log(err)));
 };
 
 ipcMain.on('login', async (_event, { username, password }) => {
@@ -200,8 +203,64 @@ ipcMain.on('login', async (_event, { username, password }) => {
 
     store.set('main-view-url', url);
 
+    const { pathname } = new URL(url);
+    const pathnameSplit = pathname.split('/');
+    if (pathnameSplit[1] === 'game') {
+      const token = store.get('token');
+      getOneGame({ platformUrlPath: pathnameSplit[2] }, token as string)
+        .then((data) => {
+          store.set('game', data);
+          views.initializeBottomMenuView();
+          views.bottomMenuView!.webContents.loadURL(
+            resolveHtmlPath('index.html', '/bottom-menu')
+          );
+        })
+        .catch((err) => console.log('getOneGame', console.log(err)));
+    } else {
+      views.finalizeBottomMenuView();
+    }
     mainWindow?.webContents.send('main-view-url');
   });
+});
+
+ipcMain.on('side-menu-navigation', (_event, destination) => {
+  if (destination === 'explore') {
+    views.hideMainView = false;
+  } else if (destination === 'library' && views.mainView) {
+    views.hideMainView = true;
+  }
+
+  views.updateViewsSize();
+});
+
+ipcMain.on('main-view-url', (_event, pathname) => {
+  views.hideMainView = false;
+  views.updateViewsSize();
+  views.mainView.webContents.loadURL(`http://localhost:3000/${pathname}`);
+});
+
+ipcMain.on('maximize', () => {
+  mainWindow!.maximize();
+});
+
+ipcMain.on('minimize', () => {
+  mainWindow!.minimize();
+});
+
+ipcMain.on('close', () => {
+  mainWindow!.close();
+});
+
+ipcMain.on('forward', () => {
+  views.mainView.webContents.goForward();
+});
+
+ipcMain.on('backward', () => {
+  views.mainView.webContents.goBack();
+});
+
+ipcMain.on('refresh', () => {
+  views.mainView.webContents.reload();
 });
 
 app

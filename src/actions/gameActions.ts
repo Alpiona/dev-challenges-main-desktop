@@ -1,4 +1,4 @@
-import client from 'client/api';
+import client from '../client/api';
 import {
   GetGamesListData,
   GetGamesListParams,
