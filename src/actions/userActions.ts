@@ -11,4 +11,15 @@ export const handleLogin = async (input: {
   return data.data;
 };
 
+export const handleUserRegister = async (input: {
+  username: string;
+  password: string;
+  passwordConfirmation: string;
+  email: string;
+}) => {
+  const { data } = await client.post('users', input);
+
+  return data.data;
+};
+
 export const handleLogout = async () => {};

@@ -14,7 +14,7 @@ import Store from 'electron-store';
 import { autoUpdater } from 'electron-updater';
 import path from 'path';
 import { getGamesList, getOneGame } from '../actions/gameActions';
-import { handleLogin } from '../actions/userActions';
+import { handleLogin, handleUserRegister } from '../actions/userActions';
 import { resolveHtmlPath } from './util';
 import ViewsManager from './views';
 
@@ -172,7 +172,6 @@ app.on('window-all-closed', () => {
 
 const login = async (username: string, password: string) => {
   const { token, expiresAt } = await handleLogin({ password, username });
-
   store.set('token', token);
 
   const cookie = {
@@ -223,11 +222,28 @@ ipcMain.on('login', async (_event, { username, password }) => {
   });
 });
 
+ipcMain.on('register', (_event, { username, password, email }) => {
+  handleUserRegister({
+    username,
+    password,
+    passwordConfirmation: password,
+    email,
+  });
+});
+
 ipcMain.on('side-menu-navigation', (_event, destination) => {
   if (destination === 'explore') {
+    views.mainView.webContents.reload();
+    // views.mainView.webContents.loadURL('http://localhost:3000');
     views.hideMainView = false;
   } else if (destination === 'library' && views.mainView) {
+    const token = store.get('token');
+
+    getGamesList({ hasBought: true }, token as string)
+      .then((data) => store.set('all-games', data))
+      .catch((err) => console.log('getGamesList', console.log(err)));
     views.hideMainView = true;
+    console.log(store.get('all-games'));
   }
 
   views.updateViewsSize();
@@ -236,6 +252,7 @@ ipcMain.on('side-menu-navigation', (_event, destination) => {
 ipcMain.on('main-view-url', (_event, pathname) => {
   views.hideMainView = false;
   views.updateViewsSize();
+
   views.mainView.webContents.loadURL(`http://localhost:3000/${pathname}`);
 });
 

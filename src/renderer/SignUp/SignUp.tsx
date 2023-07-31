@@ -6,23 +6,12 @@ import {
   FormLabel,
   Input,
   Link,
-  Spacer,
   Text,
   VStack,
 } from '@chakra-ui/react';
-import { useEffect } from 'react';
-import { Link as ReactRouterLink, useNavigate } from 'react-router-dom';
-import './Login.css';
+import { Link as ReactRouterLink } from 'react-router-dom';
 
-export default function Login() {
-  const navigate = useNavigate();
-
-  useEffect(() => {
-    window.electron.ipcRenderer.once('logged', () => {
-      navigate('/main');
-    });
-  }, []);
-
+export default function SignUp() {
   const handleSubmit = () => {
     const { value: username } = document.getElementById(
       'username'
@@ -30,33 +19,36 @@ export default function Login() {
     const { value: password } = document.getElementById(
       'password'
     ) as HTMLInputElement;
+    const { value: email } = document.getElementById(
+      'email'
+    ) as HTMLInputElement;
 
-    window.electron.ipcRenderer.sendMessage('login', { username, password });
-    // window.electron.ipcRenderer.sendMessage('login', {
-    //   username: 'alpiona',
-    //   password: 'alpaalpa',
-    // });
+    // window.electron.ipcRenderer.sendMessage('login', { username, password });
+    window.electron.ipcRenderer.sendMessage('register', {
+      username,
+      password,
+      email,
+    });
   };
 
   return (
     <ChakraProvider>
       <Center bgColor="blackAlpha.900" height="100vh" width="100vw">
         <VStack textColor="gray.300" gap={7} py="100px">
-          <VStack gap={0}>
-            <Text as="b" fontSize={60} height="auto">
-              OPPAIMAN
-            </Text>
-            <Text as="b" fontSize={60} height="auto">
-              LAUNCHER
-            </Text>
-          </VStack>
-
-          <Spacer />
-
           <FormControl>
             <FormLabel>Username</FormLabel>
             <Input
               id="username"
+              borderColor="gray.800"
+              bgColor="black"
+              required
+            />
+          </FormControl>
+          <FormControl>
+            <FormLabel>E-mail</FormLabel>
+            <Input
+              id="email"
+              type="email"
               borderColor="gray.800"
               bgColor="black"
               required
@@ -80,10 +72,10 @@ export default function Login() {
             fontSize={24}
             onClick={() => handleSubmit()}
           >
-            LOGIN
+            REGISTER
           </Button>
-          <Link as={ReactRouterLink} to="/sign-up">
-            <Text>Sign-up</Text>
+          <Link as={ReactRouterLink} to="/">
+            <Text>Login</Text>
           </Link>
         </VStack>
       </Center>

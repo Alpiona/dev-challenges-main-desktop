@@ -3,6 +3,7 @@ import { Route, HashRouter as Router, Routes } from 'react-router-dom';
 import BottomMenu from './BottomMenu/BottomMenu';
 import Login from './Login/Login';
 import Main from './Main/Main';
+import SignUp from './SignUp/SignUp';
 
 export default function App() {
   return (
@@ -10,6 +11,7 @@ export default function App() {
       <Router basename="/">
         <Routes>
           <Route path="/" element={<Login />} />
+          <Route path="/sign-up" element={<SignUp />} />
           <Route path="/main" element={<Main />} />
         </Routes>
       </Router>

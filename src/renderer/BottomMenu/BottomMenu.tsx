@@ -38,9 +38,13 @@ export default function BottomMenu() {
             <Text>Free download</Text>
           </VStack>
           <Button mr={6} bgColor="red" height="50px" textColor="white">
-            <Link href={game.builds[0].url}>
-              <Text as="b">Download</Text>
-            </Link>
+            {game.hasBought ? (
+              <Link href={game.builds[0].url}>
+                <Text as="b">Download</Text>
+              </Link>
+            ) : (
+              <Text as="b">Buy</Text>
+            )}
           </Button>
         </HStack>
       )}

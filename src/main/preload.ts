@@ -13,7 +13,8 @@ export type Channels =
   | 'refresh'
   | 'forward'
   | 'backward'
-  | 'side-menu-navigation';
+  | 'side-menu-navigation'
+  | 'register';
 export type StoreKeys =
   | 'username'
   | 'main-view-url'
